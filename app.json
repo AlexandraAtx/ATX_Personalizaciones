@@ -1,0 +1,37 @@
+{
+  "id": "f825b2b3-f5a7-4236-b864-84661a729ec9",
+  "name": "ATX-Personalizaciones",
+  "publisher": "ATX",
+  "version": "1.0.0.38",
+  "brief": "",
+  "description": "",
+  "privacyStatement": "",
+  "EULA": "",
+  "logo": "",
+  "dependencies": [
+    {
+      "id": "2736e44b-89c1-4759-9af3-283361886268",
+      "publisher": "Electronic_Invoice_BC",
+      "name": "Electronic Invoice v4.0",
+      "version": "1.4.1001.1006" 
+    }
+  ],
+  "screenshots": [],
+  "platform": "1.0.0.0",
+  "application": "26.0.0.0",
+  "idRanges": [
+    {
+      "from": 50100,
+      "to": 50149
+    }
+  ],
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": true,
+    "includeSourceInSymbolFile": true
+  },
+  "runtime": "15.0",
+  "features": [
+    "NoImplicitWith"
+  ]
+}
