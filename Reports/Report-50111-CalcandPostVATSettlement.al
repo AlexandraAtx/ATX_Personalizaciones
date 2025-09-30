@@ -225,6 +225,9 @@ report 50111 "CalcandPostVATSettlement"
                     column(UUID; UUIDs)
                     {
                     }
+                    column(FiscalInvoiceNumberPAC; FiscalInvoiceNumberPAC)
+                    {
+                    }
                     trigger OnAfterGetRecord()
                     var
                         TempDocumentDates: Text;
@@ -238,6 +241,7 @@ report 50111 "CalcandPostVATSettlement"
                         GetPaymentMethodsFromVAT("Entry No.", PaymentMethodCode, FormToPayCode);
 
                         GetAllInvoiceFieldsFromVAT("Entry No.", SourceCodes, FormToPayCodes, PaymentMethodCodes, UUIDs, DocumentDates, JournalBatchName);
+                        FiscalInvoiceNumberPAC := GetSimpleFiscalInvoiceNumberPAC("Entry No.");
 
                         if DocumentDates = '' then
                             DocumentDates := TempDocumentDates;
@@ -737,6 +741,7 @@ report 50111 "CalcandPostVATSettlement"
     end;
 
     var
+        FiscalInvoiceNumberPAC: Text;
         lf: Text[1];
         SourceCodes: Text;
         FormToPayCodes: Text;
@@ -808,6 +813,42 @@ report 50111 "CalcandPostVATSettlement"
         PostSettlement: Boolean;
         EntrdStartDate: Date;
         EnteredEndDate: Date;
+
+    procedure GetSimpleFiscalInvoiceNumberPAC(VATEntryNo: Integer): Text
+    var
+        VATEntry: Record "VAT Entry";
+        VendLedgerEntry: Record "Vendor Ledger Entry";
+        PurchInvHeader: Record "Purch. Inv. Header";
+    begin
+        // Si no existe el VAT Entry, retornar vacío
+        if not VATEntry.Get(VATEntryNo) then
+            exit('');
+
+        // Buscar en Vendor Ledger Entry con la información del VAT Entry
+        VendLedgerEntry.Reset();
+        VendLedgerEntry.SetCurrentKey("Document No.", "Document Type", "Vendor No.");
+        VendLedgerEntry.SetRange("Document No.", VATEntry."Document No.");
+        VendLedgerEntry.SetRange("Document Type", VATEntry."Document Type");
+        VendLedgerEntry.SetRange("Vendor No.", VATEntry."Bill-to/Pay-to No.");
+        VendLedgerEntry.SetRange("Posting Date", VATEntry."Posting Date");
+
+        if VendLedgerEntry.FindFirst() then begin
+            // Verificar si tiene Fiscal Invoice Number PAC en el movimiento de proveedor
+            if VendLedgerEntry."Fiscal Invoice Number PAC" <> '' then
+                exit(VendLedgerEntry."Fiscal Invoice Number PAC");
+
+            // Si es una factura, verificar en Purchase Invoice Header
+            if VendLedgerEntry."Document Type" = VendLedgerEntry."Document Type"::Invoice then begin
+                if PurchInvHeader.Get(VendLedgerEntry."Document No.") then begin
+                    if PurchInvHeader."Fiscal Invoice Number PAC" <> '' then
+                        exit(PurchInvHeader."Fiscal Invoice Number PAC");
+                end;
+            end;
+        end;
+
+        // Si no se encuentra nada, retornar vacío
+        exit('');
+    end;
 
     procedure GetAllInvoiceFieldsFromVAT(VATEntryNo: Integer; var OutSourceCodes: Text; var OutFormToPayCodes: Text; var OutPaymentMethodCodes: Text; var OutUUIDs: Text; var OutDocumentDates: Text; var OutJournalBatchNames: Text)
     var
