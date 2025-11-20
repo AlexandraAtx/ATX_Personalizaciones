@@ -1,24 +1,24 @@
-pageextension 50120 "Cust. Ledger Entries Ext" extends "Customer Ledger Entries"
+pageextension 50121 "Vendor Ledger Entries Ext" extends "Vendor Ledger Entries"
 {
     actions
     {
         addfirst(processing)
         {
-            action(VerMovimientosBuffer)
+            action(VerMovimientosProv)
             {
                 ApplicationArea = All;
-                Caption = 'Movimientos Cliente Liq.';
+                Caption = 'Movimientos Proveedor Liq.';
                 Image = Table;
                 Promoted = true;
                 PromotedCategory = Process;
                 PromotedIsBig = true;
-                ToolTip = 'Abre la tabla de movimientos de cliente';
+                ToolTip = 'Abre la tabla de movimientos de proveedor';
 
                 trigger OnAction()
                 var
-                    MovClientePage: Page "Movimientos Cliente List";
+                    MovProvePage: Page "Movimientos Proveedor List";
                 begin
-                    MovClientePage.Run();
+                    MovProvePage.Run();
                 end;
             }
         }

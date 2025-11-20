@@ -1,0 +1,2332 @@
+/* report 50116 "CustomeL"
+{
+    DefaultLayout = RDLC;
+    //RDLCLayout = './ReportLayout/CustomerLedgerReport.rdl';
+    ApplicationArea = Basic, Suite;
+    Caption = 'Movimientos Cliente';
+    UsageCategory = ReportsAndAnalysis;
+
+    dataset
+    {
+        dataitem("Cust. Ledger Entry"; "Cust. Ledger Entry")
+        {
+            DataItemTableView = sorting("Entry No.") where("Document Type" = filter(Invoice | "Credit Memo" | Payment | Refund));
+            RequestFilterFields = "Customer No.", "Posting Date", "Document Type";
+
+            column(CompanyName; COMPANYPROPERTY.DisplayName()) { }
+            column(FilterText; FilterText) { }
+            column(ReportDate; Format(Today, 0, 4)) { }
+            column(StartDate; Format(EntrdStartDate, 0, '<Day,2>/<Month,2>/<Year4>')) { }
+            column(EndDate; Format(EnteredEndDate, 0, '<Day,2>/<Month,2>/<Year4>')) { }
+            column(CustomerFilter; CustomerFilterText) { }
+
+            // Columnas principales del movimiento
+            column(TipoMovimiento; GetTipoMovimiento("Document Type")) { }
+            column(DocumentoOrigen; "Document No.") { }
+            column(FechaRegistro; Format("Posting Date", 0, '<Day,2>/<Month,2>/<Year4>')) { }
+            column(TipoDocumento; Format("Document Type")) { }
+            column(NumeroDocumento; "Document No.") { }
+            column(NoDocExterno; "External Document No.") { }
+            column(Importe; Amount) { }
+            column(ImporteDivisa; "Amount (LCY)") { }
+            column(Divisa; "Currency Code") { }
+            column(MetodoPago; PaymentMethodName) { }
+            column(FormaPago; FormToPayName) { }
+            column(TipoCambio; "Adjusted Currency Factor") { }
+            column(NoCliente; "Customer No.") { }
+            column(NombreCliente; CustomerName) { }
+            column(Descripcion; Description) { }
+            column(UUID; GetUUIDForEntry("Entry No.")) { }
+
+            // Información de aplicación
+            column(FechaHoraFirma; "Date/Time Stamped") { }
+            column(Estatus; GetEstatus("Entry No.")) { }
+            column(EstatusCancelacion; GetEstatusCancelacion("Entry No.")) { }
+            column(Usuario; "User ID") { }
+            column(TipoRelacionUUID; GetTipoRelacionUUID("Entry No.")) { }
+            column(UUIDRelacionado; GetUUIDRelacionado("Entry No.")) { }
+
+            // Dimensiones
+            column(Dimension1Value; GetDimensionValue("Dimension Set ID", 1)) { }
+            column(Dimension2Value; GetDimensionValue("Dimension Set ID", 2)) { }
+            column(Dimension3Value; GetDimensionValue("Dimension Set ID", 3)) { }
+            column(Dimension4Value; GetDimensionValue("Dimension Set ID", 4)) { }
+            column(Dimension5Value; GetDimensionValue("Dimension Set ID", 5)) { }
+            column(Dimension6Value; GetDimensionValue("Dimension Set ID", 6)) { }
+            column(Dimension7Value; GetDimensionValue("Dimension Set ID", 7)) { }
+            column(Dimension8Value; GetDimensionValue("Dimension Set ID", 8)) { }
+
+            // Nombres de dimensiones para headers
+            column(Dimension1Name; GetDimensionNameByIndex(1)) { }
+            column(Dimension2Name; GetDimensionNameByIndex(2)) { }
+            column(Dimension3Name; GetDimensionNameByIndex(3)) { }
+            column(Dimension4Name; GetDimensionNameByIndex(4)) { }
+            column(Dimension5Name; GetDimensionNameByIndex(5)) { }
+            column(Dimension6Name; GetDimensionNameByIndex(6)) { }
+            column(Dimension7Name; GetDimensionNameByIndex(7)) { }
+            column(Dimension8Name; GetDimensionNameByIndex(8)) { }
+
+            column(DimensionSetID; "Dimension Set ID") { }
+            column(RemainingAmount; "Remaining Amount") { }
+            column(EntryNo; "Entry No.") { }
+            column(SourceCode; "Source Code") { }
+
+            // DataItem hijo para mostrar los movimientos aplicados (pagos o facturas según el caso)
+            dataitem("Applied Payment Entries"; "Integer")
+            {
+                DataItemTableView = sorting(Number);
+
+                column(PaymentTipoMovimiento; GetTipoMovimientoAplicado(AppliedDocType)) { }
+                column(PaymentDocumentoOrigen; PaymentDocNo) { }
+                column(PaymentFechaRegistro; Format(PaymentPostingDate, 0, '<Day,2>/<Month,2>/<Year4>')) { }
+                column(PaymentTipoDocumento; Format(PaymentDocType)) { }
+                column(PaymentNumeroDocumento; PaymentDocNo) { }
+                column(PaymentNoDocExterno; PaymentExtDocNo) { }
+                column(PaymentImporte; PaymentAmount) { }
+                column(PaymentImporteDivisa; PaymentAmountLCY) { }
+                column(PaymentDivisa; PaymentCurrencyCode) { }
+                column(PaymentMetodoPago; PaymentMethodName) { }
+                column(PaymentFormaPago; PaymentFormToPayName) { }
+                column(PaymentTipoCambio; PaymentCurrencyFactor) { }
+                column(PaymentNoCliente; PaymentCustomerNo) { }
+                column(PaymentNombreCliente; PaymentCustomerName) { }
+                column(PaymentDescripcion; PaymentDescription) { }
+                column(PaymentUUID; GetUUIDForEntry(PaymentEntryNo)) { }
+
+                column(PaymentFechaHoraFirma; PaymentDateTimeStamped) { }
+                column(PaymentEstatus; GetEstatus(PaymentEntryNo)) { }
+                column(PaymentEstatusCancelacion; GetEstatusCancelacion(PaymentEntryNo)) { }
+                column(PaymentUsuario; PaymentUserID) { }
+                column(PaymentTipoRelacionUUID; GetTipoRelacionUUID(PaymentEntryNo)) { }
+                column(PaymentUUIDRelacionado; GetUUIDRelacionado(PaymentEntryNo)) { }
+
+                // Dimensiones del pago
+                column(PaymentDimension1Value; GetDimensionValue(PaymentDimSetID, 1)) { }
+                column(PaymentDimension2Value; GetDimensionValue(PaymentDimSetID, 2)) { }
+                column(PaymentDimension3Value; GetDimensionValue(PaymentDimSetID, 3)) { }
+                column(PaymentDimension4Value; GetDimensionValue(PaymentDimSetID, 4)) { }
+                column(PaymentDimension5Value; GetDimensionValue(PaymentDimSetID, 5)) { }
+                column(PaymentDimension6Value; GetDimensionValue(PaymentDimSetID, 6)) { }
+                column(PaymentDimension7Value; GetDimensionValue(PaymentDimSetID, 7)) { }
+                column(PaymentDimension8Value; GetDimensionValue(PaymentDimSetID, 8)) { }
+
+                column(PaymentDimensionSetID; PaymentDimSetID) { }
+                column(PaymentEntryNo; PaymentEntryNo) { }
+                column(PaymentSourceCode; PaymentSourceCode) { }
+
+                trigger OnAfterGetRecord()
+                begin
+                    if Number > TempPaymentCount then
+                        CurrReport.Break();
+
+                    // Obtener el siguiente movimiento aplicado de la lista temporal
+                    if not TempAppliedCustLedgerEntry.Get(TempAppliedEntryNos.Get(Number)) then
+                        CurrReport.Skip();
+
+                    // Llenar variables del movimiento aplicado
+                    PaymentEntryNo := TempAppliedCustLedgerEntry."Entry No.";
+                    PaymentDocNo := TempAppliedCustLedgerEntry."Document No.";
+                    PaymentPostingDate := TempAppliedCustLedgerEntry."Posting Date";
+                    PaymentDocType := TempAppliedCustLedgerEntry."Document Type";
+                    AppliedDocType := TempAppliedCustLedgerEntry."Document Type";
+                    PaymentExtDocNo := TempAppliedCustLedgerEntry."External Document No.";
+                    PaymentCurrencyCode := TempAppliedCustLedgerEntry."Currency Code";
+                    PaymentCustomerNo := TempAppliedCustLedgerEntry."Customer No.";
+                    PaymentDescription := TempAppliedCustLedgerEntry.Description;
+                    PaymentUserID := TempAppliedCustLedgerEntry."User ID";
+                    PaymentSourceCode := TempAppliedCustLedgerEntry."Source Code";
+                    PaymentDimSetID := TempAppliedCustLedgerEntry."Dimension Set ID";
+                    PaymentCurrencyFactor := TempAppliedCustLedgerEntry."Adjusted Currency Factor";
+                    //PaymentDateTimeStamped := TempAppliedCustLedgerEntry."Date/Time Stamped";
+
+                    // Calcular el monto aplicado
+                    PaymentAmount := GetAppliedAmount("Cust. Ledger Entry"."Entry No.", TempAppliedCustLedgerEntry."Entry No.");
+                    PaymentAmountLCY := GetAppliedAmountLCY("Cust. Ledger Entry"."Entry No.", TempAppliedCustLedgerEntry."Entry No.");
+
+                    // Obtener nombre del cliente
+                    if Customer.Get(PaymentCustomerNo) then
+                        PaymentCustomerName := Customer.Name
+                    else
+                        PaymentCustomerName := '';
+
+                    // Obtener método de pago y forma de pago
+                    GetPaymentMethodAndFormToPay(TempAppliedCustLedgerEntry, PaymentMethodName, PaymentFormToPayName);
+                end;
+
+                trigger OnPreDataItem()
+                begin
+                    SetRange(Number, 1, TempPaymentCount);
+                end;
+            }
+
+            trigger OnAfterGetRecord()
+            begin
+                // Limpiar variables
+                Clear(TempAppliedEntryNos);
+                TempPaymentCount := 0;
+
+                // Obtener nombre del cliente
+                if Customer.Get("Customer No.") then
+                    CustomerName := Customer.Name
+                else
+                    CustomerName := '';
+
+                // Obtener información de método de pago y forma de pago
+                GetPaymentMethodAndFormToPay("Cust. Ledger Entry", PaymentMethodName, FormToPayName);
+
+                // Buscar todos los movimientos aplicados (pagos o facturas según corresponda)
+                FindAllAppliedEntries("Entry No.");
+
+                // Filtrar por pendiente si se solicita
+                if ShowPendingOnly and ("Remaining Amount" = 0) then
+                    CurrReport.Skip();
+            end;
+
+            trigger OnPreDataItem()
+            begin
+                // Aplicar filtros de fecha
+                if (EntrdStartDate <> 0D) and (EnteredEndDate <> 0D) then
+                    SetRange("Posting Date", EntrdStartDate, EnteredEndDate)
+                else if EntrdStartDate <> 0D then
+                    SetFilter("Posting Date", '%1..', EntrdStartDate);
+
+                // Filtrar por cliente si se especifica
+                if CustomerFilter <> '' then
+                    SetFilter("Customer No.", CustomerFilter);
+
+                // Inicializar dimensiones
+                InitializeDimensions();
+            end;
+        }
+    }
+
+    requestpage
+    {
+        SaveValues = true;
+
+        layout
+        {
+            area(content)
+            {
+                group(Options)
+                {
+                    Caption = 'Opciones';
+
+                    field(StartingDate; EntrdStartDate)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Fecha inicial';
+                        ToolTip = 'Especifica la fecha inicial del período a incluir en el reporte.';
+                    }
+                    field(EndDateReq; EnteredEndDate)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Fecha final';
+                        ToolTip = 'Especifica la fecha final del período a incluir en el reporte.';
+                    }
+                    field(CustomerFilterField; CustomerFilter)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Filtro de Cliente';
+                        ToolTip = 'Especifica el filtro de clientes (ej: CLI00001..CLI000999)';
+
+                        trigger OnLookup(var Text: Text): Boolean
+                        var
+                            Customer: Record Customer;
+                            CustomerList: Page "Customer List";
+                        begin
+                            CustomerList.LookupMode(true);
+                            if CustomerList.RunModal() = Action::LookupOK then begin
+                                CustomerList.GetRecord(Customer);
+                                CustomerFilter := Customer."No.";
+                                exit(true);
+                            end;
+                            exit(false);
+                        end;
+                    }
+                    field(ShowPendingOnlyField; ShowPendingOnly)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Solo Pendientes';
+                        ToolTip = 'Mostrar solo movimientos con saldo pendiente.';
+                    }
+                }
+            }
+        }
+    }
+
+    trigger OnPreReport()
+    begin
+        FilterText := "Cust. Ledger Entry".GetFilters();
+
+        if CustomerFilter <> '' then
+            CustomerFilterText := 'Cliente: ' + CustomerFilter
+        else
+            CustomerFilterText := 'Cliente: Todos';
+    end;
+
+    var
+        Customer: Record Customer;
+        PaymentMethod: Record "Payment Method";
+        SalesInvHeader: Record "Sales Invoice Header";
+        SalesCrMemoHeader: Record "Sales Cr.Memo Header";
+        TempAppliedCustLedgerEntry: Record "Cust. Ledger Entry";
+        DimensionCodes: array[8] of Code[20];
+        DimensionNames: array[8] of Text[100];
+        ShowDimension: array[8] of Boolean;
+        TempAppliedEntryNos: List of [Integer];
+        CustomerName: Text[100];
+        PaymentMethodName: Text[100];
+        FormToPayName: Text[50];
+        FilterText: Text;
+        CustomerFilterText: Text;
+        CustomerFilter: Code[20];
+        EntrdStartDate: Date;
+        EnteredEndDate: Date;
+        ShowPendingOnly: Boolean;
+        TempPaymentCount: Integer;
+        // Variables para los movimientos aplicados
+        PaymentEntryNo: Integer;
+        PaymentDocNo: Code[20];
+        PaymentPostingDate: Date;
+        PaymentDocType: Enum "Gen. Journal Document Type";
+        AppliedDocType: Enum "Gen. Journal Document Type";
+        PaymentExtDocNo: Code[35];
+        PaymentAmount: Decimal;
+        PaymentAmountLCY: Decimal;
+        PaymentCurrencyCode: Code[10];
+        PaymentCustomerNo: Code[20];
+        PaymentCustomerName: Text[100];
+        PaymentDescription: Text[100];
+        PaymentUserID: Code[50];
+        PaymentSourceCode: Code[10];
+        PaymentDimSetID: Integer;
+        PaymentCurrencyFactor: Decimal;
+        PaymentFormToPayName: Text[50];
+        PaymentDateTimeStamped: DateTime;
+
+    // ============================================================================
+    // BÚSQUEDA COMPLETA DE MOVIMIENTOS APLICADOS (Basado en lógica del reporte IVA)
+    // ============================================================================
+
+    local procedure FindAllAppliedEntries(EntryNo: Integer)
+    var
+        CustLedgerEntry: Record "Cust. Ledger Entry";
+        ProcessedEntries: List of [Integer];
+        FoundDirectRelation: Boolean;
+    begin
+        Clear(TempAppliedEntryNos);
+        TempPaymentCount := 0;
+        FoundDirectRelation := false;
+
+        if not CustLedgerEntry.Get(EntryNo) then
+            exit;
+
+        // Búsqueda directa con relaciones exactas
+        FoundDirectRelation := SearchDirectAppliedEntries(CustLedgerEntry, ProcessedEntries);
+
+        // Si no encontramos relación directa, buscar por documento y fecha
+        if not FoundDirectRelation then begin
+            SearchByDocumentAndDate(CustLedgerEntry, ProcessedEntries);
+        end;
+
+        // Búsqueda adicional si aún no hay resultados
+        if TempPaymentCount = 0 then begin
+            SearchAdditionalEntries(CustLedgerEntry, ProcessedEntries);
+        end;
+    end;
+
+    local procedure SearchDirectAppliedEntries(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedEntries: List of [Integer]): Boolean
+    var
+        DetailedCustLedgEntry1: Record "Detailed Cust. Ledg. Entry";
+        DetailedCustLedgEntry2: Record "Detailed Cust. Ledg. Entry";
+        AppliedCustLedgerEntry: Record "Cust. Ledger Entry";
+        Found: Boolean;
+    begin
+        Found := false;
+
+        // Buscar en Detailed Customer Ledger Entry - Dirección 1
+        DetailedCustLedgEntry1.SetCurrentKey("Cust. Ledger Entry No.");
+        DetailedCustLedgEntry1.SetRange("Cust. Ledger Entry No.", CustLedgerEntry."Entry No.");
+        DetailedCustLedgEntry1.SetRange(Unapplied, false);
+
+        if DetailedCustLedgEntry1.FindSet() then
+            repeat
+                if DetailedCustLedgEntry1."Cust. Ledger Entry No." = DetailedCustLedgEntry1."Applied Cust. Ledger Entry No." then begin
+                    // Búsqueda inversa
+                    DetailedCustLedgEntry2.Reset();
+                    DetailedCustLedgEntry2.SetCurrentKey("Applied Cust. Ledger Entry No.", "Entry Type");
+                    DetailedCustLedgEntry2.SetRange("Applied Cust. Ledger Entry No.", DetailedCustLedgEntry1."Applied Cust. Ledger Entry No.");
+                    DetailedCustLedgEntry2.SetRange("Entry Type", DetailedCustLedgEntry2."Entry Type"::Application);
+                    DetailedCustLedgEntry2.SetRange(Unapplied, false);
+
+                    if DetailedCustLedgEntry2.FindSet() then
+                        repeat
+                            if DetailedCustLedgEntry2."Cust. Ledger Entry No." <> DetailedCustLedgEntry2."Applied Cust. Ledger Entry No." then begin
+                                if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry2."Cust. Ledger Entry No.") then
+                                    if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                                        AddAppliedEntryToList(AppliedCustLedgerEntry);
+                                        ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                                        Found := true;
+                                    end;
+                            end;
+                        until DetailedCustLedgEntry2.Next() = 0;
+                end else begin
+                    // Aplicación directa
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry1."Applied Cust. Ledger Entry No.") then
+                        if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                            AddAppliedEntryToList(AppliedCustLedgerEntry);
+                            ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                            Found := true;
+                        end;
+                end;
+            until DetailedCustLedgEntry1.Next() = 0;
+
+        // Verificar "Closed by Entry No."
+        if CustLedgerEntry."Closed by Entry No." <> 0 then begin
+            if AppliedCustLedgerEntry.Get(CustLedgerEntry."Closed by Entry No.") then
+                if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                    AddAppliedEntryToList(AppliedCustLedgerEntry);
+                    ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                    Found := true;
+                end;
+        end;
+
+        // Buscar movimientos que fueron cerrados por este
+        AppliedCustLedgerEntry.Reset();
+        AppliedCustLedgerEntry.SetCurrentKey("Closed by Entry No.");
+        AppliedCustLedgerEntry.SetRange("Closed by Entry No.", CustLedgerEntry."Entry No.");
+        if AppliedCustLedgerEntry.FindSet() then
+            repeat
+                if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                    AddAppliedEntryToList(AppliedCustLedgerEntry);
+                    ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                    Found := true;
+                end;
+            until AppliedCustLedgerEntry.Next() = 0;
+
+        exit(Found);
+    end;
+
+    local procedure SearchByDocumentAndDate(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedEntries: List of [Integer])
+    var
+        SearchCustLedgerEntry: Record "Cust. Ledger Entry";
+    begin
+        // Buscar por número de documento y cliente
+        SearchCustLedgerEntry.Reset();
+        SearchCustLedgerEntry.SetCurrentKey("Document No.", "Customer No.");
+        SearchCustLedgerEntry.SetRange("Document No.", CustLedgerEntry."Document No.");
+        SearchCustLedgerEntry.SetRange("Customer No.", CustLedgerEntry."Customer No.");
+
+        if SearchCustLedgerEntry.FindSet() then
+            repeat
+                if SearchCustLedgerEntry."Entry No." <> CustLedgerEntry."Entry No." then begin
+                    if not ProcessedEntries.Contains(SearchCustLedgerEntry."Entry No.") then begin
+                        // Verificar si tiene aplicaciones
+                        if SearchCustLedgerEntry."Remaining Amount" = 0 then
+                            SearchAppliedEntriesFromEntry(SearchCustLedgerEntry, ProcessedEntries)
+                        else
+                            AddAppliedEntryToList(SearchCustLedgerEntry);
+
+                        ProcessedEntries.Add(SearchCustLedgerEntry."Entry No.");
+                    end;
+                end;
+            until SearchCustLedgerEntry.Next() = 0;
+    end;
+
+    local procedure SearchAdditionalEntries(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedEntries: List of [Integer])
+    var
+        SearchCustLedgerEntry: Record "Cust. Ledger Entry";
+    begin
+        // Buscar movimientos del mismo cliente en rango de fechas cercano
+        SearchCustLedgerEntry.Reset();
+        SearchCustLedgerEntry.SetCurrentKey("Customer No.", "Posting Date");
+        SearchCustLedgerEntry.SetRange("Customer No.", CustLedgerEntry."Customer No.");
+        SearchCustLedgerEntry.SetRange("Posting Date", CalcDate('-7D', CustLedgerEntry."Posting Date"), CalcDate('+7D', CustLedgerEntry."Posting Date"));
+
+        // Filtrar por tipo opuesto (si es factura buscar pagos, si es pago buscar facturas)
+        if CustLedgerEntry."Document Type" in [CustLedgerEntry."Document Type"::Invoice, CustLedgerEntry."Document Type"::"Credit Memo"] then
+            SearchCustLedgerEntry.SetFilter("Document Type", '%1|%2',
+                SearchCustLedgerEntry."Document Type"::Payment,
+                SearchCustLedgerEntry."Document Type"::Refund)
+        else
+            SearchCustLedgerEntry.SetFilter("Document Type", '%1|%2',
+                SearchCustLedgerEntry."Document Type"::Invoice,
+                SearchCustLedgerEntry."Document Type"::"Credit Memo");
+
+        if SearchCustLedgerEntry.FindSet() then
+            repeat
+                if not ProcessedEntries.Contains(SearchCustLedgerEntry."Entry No.") then begin
+                    if SearchCustLedgerEntry."Remaining Amount" = 0 then
+                        SearchAppliedEntriesFromEntry(SearchCustLedgerEntry, ProcessedEntries);
+
+                    ProcessedEntries.Add(SearchCustLedgerEntry."Entry No.");
+
+                    if TempPaymentCount > 0 then
+                        exit; // Encontramos algo, salir
+                end;
+            until SearchCustLedgerEntry.Next() = 0;
+    end;
+
+    local procedure SearchAppliedEntriesFromEntry(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedEntries: List of [Integer])
+    var
+        DetailedCustLedgEntry: Record "Detailed Cust. Ledg. Entry";
+        AppliedCustLedgerEntry: Record "Cust. Ledger Entry";
+    begin
+        // Buscar aplicaciones de este movimiento
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", CustLedgerEntry."Entry No.");
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                if DetailedCustLedgEntry."Applied Cust. Ledger Entry No." <> DetailedCustLedgEntry."Cust. Ledger Entry No." then begin
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry."Applied Cust. Ledger Entry No.") then
+                        if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                            AddAppliedEntryToList(AppliedCustLedgerEntry);
+                            ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                        end;
+                end;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Buscar en dirección inversa
+        DetailedCustLedgEntry.Reset();
+        DetailedCustLedgEntry.SetCurrentKey("Applied Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", CustLedgerEntry."Entry No.");
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                if DetailedCustLedgEntry."Cust. Ledger Entry No." <> DetailedCustLedgEntry."Applied Cust. Ledger Entry No." then begin
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry."Cust. Ledger Entry No.") then
+                        if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                            AddAppliedEntryToList(AppliedCustLedgerEntry);
+                            ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                        end;
+                end;
+            until DetailedCustLedgEntry.Next() = 0;
+    end;
+
+    local procedure AddAppliedEntryToList(var CustLedgerEntry: Record "Cust. Ledger Entry")
+    begin
+        // Agregar cualquier tipo de movimiento aplicado (no solo pagos)
+        TempPaymentCount += 1;
+        TempAppliedEntryNos.Add(CustLedgerEntry."Entry No.");
+    end;
+
+    local procedure GetAppliedAmount(InvoiceEntryNo: Integer; PaymentEntryNo: Integer): Decimal
+    var
+        DetailedCustLedgEntry: Record "Detailed Cust. Ledg. Entry";
+        TotalAmount: Decimal;
+    begin
+        TotalAmount := 0;
+
+        // Buscar en ambas direcciones
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", PaymentEntryNo);
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", InvoiceEntryNo);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                TotalAmount += DetailedCustLedgEntry.Amount;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Buscar en dirección inversa
+        DetailedCustLedgEntry.Reset();
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", InvoiceEntryNo);
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", PaymentEntryNo);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                TotalAmount += DetailedCustLedgEntry.Amount;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        exit(Abs(TotalAmount));
+    end;
+
+    local procedure GetAppliedAmountLCY(InvoiceEntryNo: Integer; PaymentEntryNo: Integer): Decimal
+    var
+        DetailedCustLedgEntry: Record "Detailed Cust. Ledg. Entry";
+        TotalAmount: Decimal;
+    begin
+        TotalAmount := 0;
+
+        // Buscar en ambas direcciones
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", PaymentEntryNo);
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", InvoiceEntryNo);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                TotalAmount += DetailedCustLedgEntry."Amount (LCY)";
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Buscar en dirección inversa
+        DetailedCustLedgEntry.Reset();
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", InvoiceEntryNo);
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", PaymentEntryNo);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                TotalAmount += DetailedCustLedgEntry."Amount (LCY)";
+            until DetailedCustLedgEntry.Next() = 0;
+
+        exit(Abs(TotalAmount));
+    end;
+
+    // ============================================================================
+    // BÚSQUEDA DE UUID (Basado en lógica del reporte IVA)
+    // ============================================================================
+
+    local procedure GetUUIDForEntry(EntryNo: Integer): Text
+    var
+        CustLedgerEntry: Record "Cust. Ledger Entry";
+        ProcessedDocuments: List of [Code[20]];
+        UUID: Text;
+        FoundDirectRelation: Boolean;
+    begin
+        UUID := '';
+        FoundDirectRelation := false;
+
+        if not CustLedgerEntry.Get(EntryNo) then
+            exit('');
+
+        // Búsqueda directa en el header de la factura
+        UUID := GetUUIDFromDirectDocument(CustLedgerEntry, ProcessedDocuments);
+        if UUID <> '' then begin
+            FoundDirectRelation := true;
+            exit(UUID);
+        end;
+
+        // Si no encontramos UUID directamente, buscar en documentos relacionados
+        if not FoundDirectRelation then
+            UUID := SearchUUIDInRelatedDocuments(CustLedgerEntry, ProcessedDocuments);
+
+        // Si aún no hay UUID, buscar en documentos aplicados
+        if UUID = '' then
+            UUID := SearchUUIDInAppliedDocuments(CustLedgerEntry, ProcessedDocuments);
+
+        exit(UUID);
+    end;
+
+    local procedure GetUUIDFromDirectDocument(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedDocuments: List of [Code[20]]): Text
+    var
+        SalesInvHeader: Record "Sales Invoice Header";
+        SalesCrMemoHeader: Record "Sales Cr.Memo Header";
+    begin
+        // Verificar si ya procesamos este documento
+        if ProcessedDocuments.Contains(CustLedgerEntry."Document No.") then
+            exit('');
+
+        // Buscar en Sales Invoice Header
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::Invoice then begin
+            if SalesInvHeader.Get(CustLedgerEntry."Document No.") then begin
+                ProcessedDocuments.Add(CustLedgerEntry."Document No.");
+                if SalesInvHeader."Fiscal Invoice Number PAC" <> '' then
+                    exit(SalesInvHeader."Fiscal Invoice Number PAC");
+            end;
+        end;
+
+        // Buscar en Sales Credit Memo Header
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::"Credit Memo" then begin
+            if SalesCrMemoHeader.Get(CustLedgerEntry."Document No.") then begin
+                ProcessedDocuments.Add(CustLedgerEntry."Document No.");
+                if SalesCrMemoHeader."Fiscal Invoice Number PAC" <> '' then
+                    exit(SalesCrMemoHeader."Fiscal Invoice Number PAC");
+            end;
+        end;
+
+        exit('');
+    end;
+
+    local procedure SearchUUIDInRelatedDocuments(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedDocuments: List of [Code[20]]): Text
+    var
+        SearchCustLedgerEntry: Record "Cust. Ledger Entry";
+        UUID: Text;
+    begin
+        UUID := '';
+
+        // Buscar por número de documento y fecha
+        SearchCustLedgerEntry.Reset();
+        SearchCustLedgerEntry.SetCurrentKey("Document No.", "Posting Date");
+        SearchCustLedgerEntry.SetRange("Document No.", CustLedgerEntry."Document No.");
+        SearchCustLedgerEntry.SetRange("Posting Date", CustLedgerEntry."Posting Date");
+
+        if SearchCustLedgerEntry.FindSet() then
+            repeat
+                if not ProcessedDocuments.Contains(SearchCustLedgerEntry."Document No.") then begin
+                    UUID := GetUUIDFromDirectDocument(SearchCustLedgerEntry, ProcessedDocuments);
+                    if UUID <> '' then
+                        exit(UUID);
+
+                    // Si este movimiento está liquidado, buscar en sus aplicaciones
+                    if SearchCustLedgerEntry."Remaining Amount" = 0 then begin
+                        UUID := SearchUUIDInSettledDocuments(SearchCustLedgerEntry, ProcessedDocuments);
+                        if UUID <> '' then
+                            exit(UUID);
+                    end;
+                end;
+            until SearchCustLedgerEntry.Next() = 0;
+
+        exit('');
+    end;
+
+    local procedure SearchUUIDInAppliedDocuments(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedDocuments: List of [Code[20]]): Text
+    var
+        SearchCustLedgerEntry: Record "Cust. Ledger Entry";
+        UUID: Text;
+    begin
+        UUID := '';
+
+        // Buscar movimientos del mismo cliente en rango de fechas
+        SearchCustLedgerEntry.Reset();
+        SearchCustLedgerEntry.SetCurrentKey("Customer No.", "Posting Date");
+        SearchCustLedgerEntry.SetRange("Customer No.", CustLedgerEntry."Customer No.");
+        SearchCustLedgerEntry.SetRange("Posting Date", CalcDate('-7D', CustLedgerEntry."Posting Date"), CalcDate('+7D', CustLedgerEntry."Posting Date"));
+        SearchCustLedgerEntry.SetFilter("Document Type", '%1|%2',
+            SearchCustLedgerEntry."Document Type"::Invoice,
+            SearchCustLedgerEntry."Document Type"::"Credit Memo");
+
+        if SearchCustLedgerEntry.FindSet() then
+            repeat
+                if not ProcessedDocuments.Contains(SearchCustLedgerEntry."Document No.") then begin
+                    UUID := GetUUIDFromDirectDocument(SearchCustLedgerEntry, ProcessedDocuments);
+                    if UUID <> '' then
+                        exit(UUID);
+                end;
+            until SearchCustLedgerEntry.Next() = 0;
+
+        exit('');
+    end;
+
+    local procedure SearchUUIDInSettledDocuments(var CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedDocuments: List of [Code[20]]): Text
+    var
+        DetailedCustLedgEntry: Record "Detailed Cust. Ledg. Entry";
+        AppliedCustLedgerEntry: Record "Cust. Ledger Entry";
+        UUID: Text;
+    begin
+        UUID := '';
+
+        // Buscar en movimientos aplicados - Dirección 1
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", CustLedgerEntry."Entry No.");
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                if DetailedCustLedgEntry."Applied Cust. Ledger Entry No." <> DetailedCustLedgEntry."Cust. Ledger Entry No." then begin
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry."Applied Cust. Ledger Entry No.") then begin
+                        if not ProcessedDocuments.Contains(AppliedCustLedgerEntry."Document No.") then begin
+                            UUID := GetUUIDFromCustLedgerEntry(AppliedCustLedgerEntry, ProcessedDocuments);
+                            if UUID <> '' then
+                                exit(UUID);
+                        end;
+                    end;
+                end;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Buscar en movimientos aplicados - Dirección 2
+        DetailedCustLedgEntry.Reset();
+        DetailedCustLedgEntry.SetCurrentKey("Applied Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", CustLedgerEntry."Entry No.");
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                if DetailedCustLedgEntry."Cust. Ledger Entry No." <> DetailedCustLedgEntry."Applied Cust. Ledger Entry No." then begin
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry."Cust. Ledger Entry No.") then begin
+                        if not ProcessedDocuments.Contains(AppliedCustLedgerEntry."Document No.") then begin
+                            UUID := GetUUIDFromCustLedgerEntry(AppliedCustLedgerEntry, ProcessedDocuments);
+                            if UUID <> '' then
+                                exit(UUID);
+                        end;
+                    end;
+                end;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Verificar "Closed by Entry No."
+        if CustLedgerEntry."Closed by Entry No." <> 0 then begin
+            if AppliedCustLedgerEntry.Get(CustLedgerEntry."Closed by Entry No.") then begin
+                if not ProcessedDocuments.Contains(AppliedCustLedgerEntry."Document No.") then begin
+                    UUID := GetUUIDFromCustLedgerEntry(AppliedCustLedgerEntry, ProcessedDocuments);
+                    if UUID <> '' then
+                        exit(UUID);
+                end;
+            end;
+        end;
+
+        // Buscar movimientos que fueron cerrados por este
+        AppliedCustLedgerEntry.Reset();
+        AppliedCustLedgerEntry.SetCurrentKey("Closed by Entry No.");
+        AppliedCustLedgerEntry.SetRange("Closed by Entry No.", CustLedgerEntry."Entry No.");
+        if AppliedCustLedgerEntry.FindSet() then
+            repeat
+                if not ProcessedDocuments.Contains(AppliedCustLedgerEntry."Document No.") then begin
+                    UUID := GetUUIDFromCustLedgerEntry(AppliedCustLedgerEntry, ProcessedDocuments);
+                    if UUID <> '' then
+                        exit(UUID);
+                end;
+            until AppliedCustLedgerEntry.Next() = 0;
+
+        exit('');
+    end;
+
+    local procedure GetUUIDFromCustLedgerEntry(var CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedDocuments: List of [Code[20]]): Text
+    var
+        SalesInvHeader: Record "Sales Invoice Header";
+        SalesCrMemoHeader: Record "Sales Cr.Memo Header";
+    begin
+        // Marcar como procesado
+        if not ProcessedDocuments.Contains(CustLedgerEntry."Document No.") then
+            ProcessedDocuments.Add(CustLedgerEntry."Document No.");
+
+        // Buscar UUID según el tipo de documento
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::Invoice then begin
+            if SalesInvHeader.Get(CustLedgerEntry."Document No.") then begin
+                if SalesInvHeader."Fiscal Invoice Number PAC" <> '' then
+                    exit(SalesInvHeader."Fiscal Invoice Number PAC");
+            end;
+        end;
+
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::"Credit Memo" then begin
+            if SalesCrMemoHeader.Get(CustLedgerEntry."Document No.") then begin
+                if SalesCrMemoHeader."Fiscal Invoice Number PAC" <> '' then
+                    exit(SalesCrMemoHeader."Fiscal Invoice Number PAC");
+            end;
+        end;
+
+        exit('');
+    end;
+
+    // ============================================================================
+    // FUNCIONES DE MÉTODO Y FORMA DE PAGO
+    // ============================================================================
+
+    local procedure GetPaymentMethodAndFormToPay(CustLedgerEntry: Record "Cust. Ledger Entry"; var PaymentMethodName: Text[100]; var FormToPayName: Text[50])
+    var
+        SalesInvHeader: Record "Sales Invoice Header";
+        SalesCrMemoHeader: Record "Sales Cr.Memo Header";
+        PaymentMethod: Record "Payment Method";
+    begin
+        PaymentMethodName := '';
+        FormToPayName := '';
+
+        // Obtener método de pago del movimiento
+        if CustLedgerEntry."Payment Method Code" <> '' then begin
+            if PaymentMethod.Get(CustLedgerEntry."Payment Method Code") then
+                PaymentMethodName := PaymentMethod.Description
+            else
+                PaymentMethodName := CustLedgerEntry."Payment Method Code";
+        end;
+
+        // Obtener forma de pago del header según el tipo de documento
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::Invoice then begin
+            if SalesInvHeader.Get(CustLedgerEntry."Document No.") then begin
+                if FormToPayName = '' then
+                    FormToPayName := SalesInvHeader."Payment Method Code";
+
+                // Si no tenemos método de pago del movimiento, intentar del header
+                if (PaymentMethodName = '') and (SalesInvHeader."Payment Method Code" <> '') then begin
+                    if PaymentMethod.Get(SalesInvHeader."Payment Method Code") then
+                        PaymentMethodName := PaymentMethod.Description
+                    else
+                        PaymentMethodName := SalesInvHeader."Payment Method Code";
+                end;
+            end;
+        end;
+
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::"Credit Memo" then begin
+            if SalesCrMemoHeader.Get(CustLedgerEntry."Document No.") then begin
+                if FormToPayName = '' then
+                    FormToPayName := SalesCrMemoHeader."Payment Method Code";
+
+                if (PaymentMethodName = '') and (SalesCrMemoHeader."Payment Method Code" <> '') then begin
+                    if PaymentMethod.Get(SalesCrMemoHeader."Payment Method Code") then
+                        PaymentMethodName := PaymentMethod.Description
+                    else
+                        PaymentMethodName := SalesCrMemoHeader."Payment Method Code";
+                end;
+            end;
+        end;
+    end;
+
+    // ============================================================================
+    // FUNCIONES AUXILIARES
+    // ============================================================================
+
+    local procedure GetTipoMovimiento(DocumentType: Enum "Gen. Journal Document Type"): Text
+    begin
+        case DocumentType of
+            DocumentType::Invoice, DocumentType::"Credit Memo":
+                exit('Mov. inicial');
+            DocumentType::Payment, DocumentType::Refund:
+                exit('Mov. inicial');
+            else
+                exit('Mov. inicial');
+        end;
+    end;
+
+    local procedure GetTipoMovimientoAplicado(DocumentType: Enum "Gen. Journal Document Type"): Text
+    begin
+        case DocumentType of
+            DocumentType::Invoice:
+                exit('Factura aplicada');
+            DocumentType::"Credit Memo":
+                exit('Nota crédito aplicada');
+            DocumentType::Payment:
+                exit('Liquidación');
+            DocumentType::Refund:
+                exit('Reembolso');
+            else
+                exit('Liquidación');
+        end;
+    end;
+
+    local procedure GetEstatus(EntryNo: Integer): Text
+    var
+        CustLedgerEntry: Record "Cust. Ledger Entry";
+        SalesInvHeader: Record "Sales Invoice Header";
+        SalesCrMemoHeader: Record "Sales Cr.Memo Header";
+    begin
+        if not CustLedgerEntry.Get(EntryNo) then
+            exit('');
+
+        // Solo para facturas y notas de crédito que tengan UUID
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::Invoice then begin
+            if SalesInvHeader.Get(CustLedgerEntry."Document No.") then begin
+                if SalesInvHeader."Fiscal Invoice Number PAC" <> '' then
+                    exit('Sello Recibido');
+            end;
+        end;
+
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::"Credit Memo" then begin
+            if SalesCrMemoHeader.Get(CustLedgerEntry."Document No.") then begin
+                if SalesCrMemoHeader."Fiscal Invoice Number PAC" <> '' then
+                    exit('Sello Recibido');
+            end;
+        end;
+
+        exit('');
+    end;
+
+    local procedure GetEstatusCancelacion(EntryNo: Integer): Text
+    begin
+        // Implementar según tu lógica de cancelación
+        exit('');
+    end;
+
+    local procedure GetTipoRelacionUUID(EntryNo: Integer): Text
+    begin
+        // Implementar según tu lógica de relación de UUIDs
+        exit('');
+    end;
+
+    local procedure GetUUIDRelacionado(EntryNo: Integer): Text
+    begin
+        // Implementar según tu lógica de UUIDs relacionados
+        exit('');
+    end;
+
+    local procedure InitializeDimensions()
+    var
+        GLSetup: Record "General Ledger Setup";
+        Dimension: Record Dimension;
+        i: Integer;
+    begin
+        Clear(DimensionCodes);
+        Clear(DimensionNames);
+        Clear(ShowDimension);
+
+        if not GLSetup.Get() then
+            exit;
+
+        i := 1;
+
+        if GLSetup."Global Dimension 1 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Global Dimension 1 Code";
+            if Dimension.Get(GLSetup."Global Dimension 1 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Global Dimension 2 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Global Dimension 2 Code";
+            if Dimension.Get(GLSetup."Global Dimension 2 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Shortcut Dimension 3 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Shortcut Dimension 3 Code";
+            if Dimension.Get(GLSetup."Shortcut Dimension 3 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Shortcut Dimension 4 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Shortcut Dimension 4 Code";
+            if Dimension.Get(GLSetup."Shortcut Dimension 4 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Shortcut Dimension 5 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Shortcut Dimension 5 Code";
+            if Dimension.Get(GLSetup."Shortcut Dimension 5 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Shortcut Dimension 6 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Shortcut Dimension 6 Code";
+            if Dimension.Get(GLSetup."Shortcut Dimension 6 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Shortcut Dimension 7 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Shortcut Dimension 7 Code";
+            if Dimension.Get(GLSetup."Shortcut Dimension 7 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Shortcut Dimension 8 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Shortcut Dimension 8 Code";
+            if Dimension.Get(GLSetup."Shortcut Dimension 8 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+    end;
+
+    local procedure GetDimensionValue(DimensionSetID: Integer; Index: Integer): Text
+    var
+        DimSetEntry: Record "Dimension Set Entry";
+        DimensionValue: Record "Dimension Value";
+    begin
+        if DimensionSetID = 0 then
+            exit('');
+
+        if (Index > ArrayLen(DimensionCodes)) or (DimensionCodes[Index] = '') then
+            exit('');
+
+        DimSetEntry.Reset();
+        DimSetEntry.SetRange("Dimension Set ID", DimensionSetID);
+        DimSetEntry.SetRange("Dimension Code", DimensionCodes[Index]);
+
+        if DimSetEntry.FindFirst() then begin
+            if DimensionValue.Get(DimSetEntry."Dimension Code", DimSetEntry."Dimension Value Code") then
+                exit(DimensionValue.Name)
+            else
+                exit(DimSetEntry."Dimension Value Code");
+        end else
+            exit('');
+    end;
+
+    local procedure GetDimensionNameByIndex(Index: Integer): Text[100]
+    begin
+        if Index <= ArrayLen(DimensionNames) then
+            exit(DimensionNames[Index]);
+        exit('');
+    end;
+} */
+report 50116 "CustomerLEReport"
+{
+    DefaultLayout = RDLC;
+    //RDLCLayout = './ReportLayout/CustomerLedgerReport.rdl';
+    ApplicationArea = Basic, Suite;
+    Caption = 'Movimientos C';
+    UsageCategory = ReportsAndAnalysis;
+
+    dataset
+    {
+        dataitem("Cust. Ledger Entry"; "Cust. Ledger Entry")
+        {
+            DataItemTableView = sorting("Entry No.") where("Document Type" = filter(Invoice | "Credit Memo" | Payment | Refund));
+            RequestFilterFields = "Customer No.", "Posting Date", "Document Type";
+
+            column(CompanyName; COMPANYPROPERTY.DisplayName()) { }
+            column(FilterText; FilterText) { }
+            column(ReportDate; Format(Today, 0, 4)) { }
+            column(StartDate; Format(EntrdStartDate, 0, '<Day,2>/<Month,2>/<Year4>')) { }
+            column(EndDate; Format(EnteredEndDate, 0, '<Day,2>/<Month,2>/<Year4>')) { }
+            column(CustomerFilter; CustomerFilterText) { }
+
+            // Columnas principales del movimiento
+            column(TipoMovimiento; GetTipoMovimiento("Document Type")) { }
+            column(DocumentoOrigen; "Document No.") { }
+            column(FechaRegistro; Format("Posting Date", 0, '<Day,2>/<Month,2>/<Year4>')) { }
+            column(TipoDocumento; Format("Document Type")) { }
+            column(NumeroDocumento; "Document No.") { }
+            column(NoDocExterno; "External Document No.") { }
+            column(Importe; Amount) { }
+            column(ImporteDivisa; "Amount (LCY)") { }
+            column(Divisa; "Currency Code") { }
+            column(MetodoPago; PaymentMethodName) { }
+            column(FormaPago; FormToPayName) { }
+            column(TipoCambio; "Adjusted Currency Factor") { }
+            column(NoCliente; "Customer No.") { }
+            column(NombreCliente; CustomerName) { }
+            column(Descripcion; Description) { }
+            column(UUID; GetUUIDForEntry("Entry No.")) { }
+
+            // Información de aplicación
+            column(FechaHoraFirma; "Date/Time Stamped") { }
+            column(Estatus; GetEstatus("Entry No.")) { }
+            column(EstatusCancelacion; GetEstatusCancelacion("Entry No.")) { }
+            column(Usuario; "User ID") { }
+            column(TipoRelacionUUID; GetTipoRelacionUUID("Entry No.")) { }
+            column(UUIDRelacionado; GetUUIDRelacionado("Entry No.")) { }
+
+            // Dimensiones
+            column(Dimension1Value; GetDimensionValue("Dimension Set ID", 1)) { }
+            column(Dimension2Value; GetDimensionValue("Dimension Set ID", 2)) { }
+            column(Dimension3Value; GetDimensionValue("Dimension Set ID", 3)) { }
+            column(Dimension4Value; GetDimensionValue("Dimension Set ID", 4)) { }
+            column(Dimension5Value; GetDimensionValue("Dimension Set ID", 5)) { }
+            column(Dimension6Value; GetDimensionValue("Dimension Set ID", 6)) { }
+            column(Dimension7Value; GetDimensionValue("Dimension Set ID", 7)) { }
+            column(Dimension8Value; GetDimensionValue("Dimension Set ID", 8)) { }
+
+            // Nombres de dimensiones para headers
+            column(Dimension1Name; GetDimensionNameByIndex(1)) { }
+            column(Dimension2Name; GetDimensionNameByIndex(2)) { }
+            column(Dimension3Name; GetDimensionNameByIndex(3)) { }
+            column(Dimension4Name; GetDimensionNameByIndex(4)) { }
+            column(Dimension5Name; GetDimensionNameByIndex(5)) { }
+            column(Dimension6Name; GetDimensionNameByIndex(6)) { }
+            column(Dimension7Name; GetDimensionNameByIndex(7)) { }
+            column(Dimension8Name; GetDimensionNameByIndex(8)) { }
+
+            column(DimensionSetID; "Dimension Set ID") { }
+            column(RemainingAmount; "Remaining Amount") { }
+            column(EntryNo; "Entry No.") { }
+            column(SourceCode; "Source Code") { }
+
+            // DataItem hijo para mostrar los movimientos aplicados (pagos o facturas según el caso)
+            dataitem("Applied Entries"; "Integer")
+            {
+                DataItemTableView = sorting(Number);
+
+                // Columnas que cambian según el contexto
+                column(AppliedTipoMovimiento; AppliedTipoMovimiento) { }
+                column(AppliedDocumentoOrigen; AppliedDocNo) { }
+                column(AppliedFechaRegistro; Format(AppliedPostingDate, 0, '<Day,2>/<Month,2>/<Year4>')) { }
+                column(AppliedTipoDocumento; Format(AppliedDocType)) { }
+                column(AppliedNumeroDocumento; AppliedDocNo) { }
+                column(AppliedNoDocExterno; AppliedExtDocNo) { }
+                column(AppliedImporte; AppliedAmount) { }
+                column(AppliedImporteDivisa; AppliedAmountLCY) { }
+                column(AppliedDivisa; AppliedCurrencyCode) { }
+                column(AppliedMetodoPago; AppliedPaymentMethodName) { }
+                column(AppliedFormaPago; AppliedFormToPayName) { }
+                column(AppliedTipoCambio; AppliedCurrencyFactor) { }
+                column(AppliedNoCliente; AppliedCustomerNo) { }
+                column(AppliedNombreCliente; AppliedCustomerName) { }
+                column(AppliedDescripcion; AppliedDescription) { }
+                column(AppliedUUID; GetUUIDForEntry(AppliedEntryNo)) { }
+                column(AppliedFechaHoraFirma; AppliedDateTimeStamped) { }
+                column(AppliedEstatus; GetEstatus(AppliedEntryNo)) { }
+                column(AppliedEstatusCancelacion; GetEstatusCancelacion(AppliedEntryNo)) { }
+                column(AppliedUsuario; AppliedUserID) { }
+                column(AppliedTipoRelacionUUID; GetTipoRelacionUUID(AppliedEntryNo)) { }
+                column(AppliedUUIDRelacionado; GetUUIDRelacionado(AppliedEntryNo)) { }
+
+                // Dimensiones del movimiento aplicado
+                column(AppliedDimension1Value; GetDimensionValue(AppliedDimSetID, 1)) { }
+                column(AppliedDimension2Value; GetDimensionValue(AppliedDimSetID, 2)) { }
+                column(AppliedDimension3Value; GetDimensionValue(AppliedDimSetID, 3)) { }
+                column(AppliedDimension4Value; GetDimensionValue(AppliedDimSetID, 4)) { }
+                column(AppliedDimension5Value; GetDimensionValue(AppliedDimSetID, 5)) { }
+                column(AppliedDimension6Value; GetDimensionValue(AppliedDimSetID, 6)) { }
+                column(AppliedDimension7Value; GetDimensionValue(AppliedDimSetID, 7)) { }
+                column(AppliedDimension8Value; GetDimensionValue(AppliedDimSetID, 8)) { }
+
+                column(AppliedDimensionSetID; AppliedDimSetID) { }
+                column(AppliedEntryNo; AppliedEntryNo) { }
+                column(AppliedSourceCode; AppliedSourceCode) { }
+
+                trigger OnAfterGetRecord()
+                begin
+                    if Number > TempPaymentCount then
+                        CurrReport.Break();
+
+                    // Obtener el siguiente movimiento aplicado de la lista temporal
+                    if not TempAppliedCustLedgerEntry.Get(TempAppliedEntryNos.Get(Number)) then
+                        CurrReport.Skip();
+
+                    // Llenar variables del movimiento aplicado
+                    AppliedEntryNo := TempAppliedCustLedgerEntry."Entry No.";
+                    AppliedDocNo := TempAppliedCustLedgerEntry."Document No.";
+                    AppliedPostingDate := TempAppliedCustLedgerEntry."Posting Date";
+                    AppliedDocType := TempAppliedCustLedgerEntry."Document Type";
+                    AppliedExtDocNo := TempAppliedCustLedgerEntry."External Document No.";
+                    AppliedCurrencyCode := TempAppliedCustLedgerEntry."Currency Code";
+                    AppliedCustomerNo := TempAppliedCustLedgerEntry."Customer No.";
+                    AppliedDescription := TempAppliedCustLedgerEntry.Description;
+                    AppliedUserID := TempAppliedCustLedgerEntry."User ID";
+                    AppliedSourceCode := TempAppliedCustLedgerEntry."Source Code";
+                    AppliedDimSetID := TempAppliedCustLedgerEntry."Dimension Set ID";
+                    AppliedCurrencyFactor := TempAppliedCustLedgerEntry."Adjusted Currency Factor";
+
+                    // Determinar el tipo de movimiento según el contexto
+                    if "Cust. Ledger Entry"."Document Type" in ["Cust. Ledger Entry"."Document Type"::Invoice, "Cust. Ledger Entry"."Document Type"::"Credit Memo"] then
+                        AppliedTipoMovimiento := 'Liquidación'  // Si el principal es factura, esto es pago
+                    else
+                        AppliedTipoMovimiento := 'Factura aplicada';  // Si el principal es pago, esto es factura
+
+                    // Calcular el monto aplicado
+                    AppliedAmount := GetAppliedAmount("Cust. Ledger Entry"."Entry No.", TempAppliedCustLedgerEntry."Entry No.");
+                    AppliedAmountLCY := GetAppliedAmountLCY("Cust. Ledger Entry"."Entry No.", TempAppliedCustLedgerEntry."Entry No.");
+
+                    // Obtener nombre del cliente
+                    if Customer.Get(AppliedCustomerNo) then
+                        AppliedCustomerName := Customer.Name
+                    else
+                        AppliedCustomerName := '';
+
+                    // Obtener método de pago y forma de pago
+                    GetPaymentMethodAndFormToPay(TempAppliedCustLedgerEntry, AppliedPaymentMethodName, AppliedFormToPayName);
+                end;
+
+                trigger OnPreDataItem()
+                begin
+                    SetRange(Number, 1, TempPaymentCount);
+                end;
+            }
+
+            trigger OnAfterGetRecord()
+            begin
+                // Limpiar variables
+                Clear(TempAppliedEntryNos);
+                TempPaymentCount := 0;
+
+                // Obtener nombre del cliente
+                if Customer.Get("Customer No.") then
+                    CustomerName := Customer.Name
+                else
+                    CustomerName := '';
+
+                // Obtener información de método de pago y forma de pago
+                GetPaymentMethodAndFormToPay("Cust. Ledger Entry", PaymentMethodName, FormToPayName);
+
+                // CAMBIO CRÍTICO: Determinar qué buscar según el tipo de documento actual
+                if "Document Type" in ["Document Type"::Invoice, "Document Type"::"Credit Memo"] then begin
+                    // Si es FACTURA: buscar PAGOS que la liquidan
+                    FindAppliedPaymentsForInvoice("Entry No.");
+                end else if "Document Type" in ["Document Type"::Payment, "Document Type"::Refund] then begin
+                    // Si es PAGO: buscar FACTURAS que liquida
+                    FindAppliedInvoicesForPayment("Entry No.");
+                end;
+
+                // Filtrar por pendiente si se solicita
+                if ShowPendingOnly and ("Remaining Amount" = 0) and (TempPaymentCount = 0) then
+                    CurrReport.Skip();
+            end;
+
+            trigger OnPreDataItem()
+            begin
+                // Aplicar filtros de fecha
+                if (EntrdStartDate <> 0D) and (EnteredEndDate <> 0D) then
+                    SetRange("Posting Date", EntrdStartDate, EnteredEndDate)
+                else if EntrdStartDate <> 0D then
+                    SetFilter("Posting Date", '%1..', EntrdStartDate);
+
+                // Filtrar por cliente si se especifica
+                if CustomerFilter <> '' then
+                    SetFilter("Customer No.", CustomerFilter);
+
+                // Inicializar dimensiones
+                InitializeDimensions();
+            end;
+        }
+    }
+
+    requestpage
+    {
+        SaveValues = true;
+
+        layout
+        {
+            area(content)
+            {
+                group(Options)
+                {
+                    Caption = 'Opciones';
+
+                    field(StartingDate; EntrdStartDate)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Fecha inicial';
+                        ToolTip = 'Especifica la fecha inicial del período a incluir en el reporte.';
+                    }
+                    field(EndDateReq; EnteredEndDate)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Fecha final';
+                        ToolTip = 'Especifica la fecha final del período a incluir en el reporte.';
+                    }
+                    field(CustomerFilterField; CustomerFilter)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Filtro de Cliente';
+                        ToolTip = 'Especifica el filtro de clientes (ej: CLI00001..CLI000999)';
+
+                        trigger OnLookup(var Text: Text): Boolean
+                        var
+                            Customer: Record Customer;
+                            CustomerList: Page "Customer List";
+                        begin
+                            CustomerList.LookupMode(true);
+                            if CustomerList.RunModal() = Action::LookupOK then begin
+                                CustomerList.GetRecord(Customer);
+                                CustomerFilter := Customer."No.";
+                                exit(true);
+                            end;
+                            exit(false);
+                        end;
+                    }
+                    field(ShowPendingOnlyField; ShowPendingOnly)
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Solo Pendientes';
+                        ToolTip = 'Mostrar solo movimientos con saldo pendiente.';
+                    }
+                }
+            }
+        }
+    }
+
+    trigger OnPreReport()
+    begin
+        FilterText := "Cust. Ledger Entry".GetFilters();
+
+        if CustomerFilter <> '' then
+            CustomerFilterText := 'Cliente: ' + CustomerFilter
+        else
+            CustomerFilterText := 'Cliente: Todos';
+    end;
+
+    var
+
+    var
+        AppliedTipoMovimiento: Text;
+        AppliedDocNo: Code[20];
+        AppliedPostingDate: Date;
+        AppliedExtDocNo: Code[35];
+        AppliedAmount: Decimal;
+        AppliedAmountLCY: Decimal;
+        AppliedCurrencyCode: Code[10];
+        AppliedCustomerNo: Code[20];
+        AppliedCustomerName: Text[100];
+        AppliedDescription: Text[100];
+        AppliedUserID: Code[50];
+        AppliedSourceCode: Code[10];
+        AppliedDimSetID: Integer;
+        AppliedCurrencyFactor: Decimal;
+        AppliedPaymentMethodName: Text[100];
+        AppliedFormToPayName: Text[50];
+        AppliedDateTimeStamped: DateTime;
+        AppliedEntryNo: Integer;
+        Customer: Record Customer;
+        PaymentMethod: Record "Payment Method";
+        SalesInvHeader: Record "Sales Invoice Header";
+        SalesCrMemoHeader: Record "Sales Cr.Memo Header";
+        TempAppliedCustLedgerEntry: Record "Cust. Ledger Entry";
+        DimensionCodes: array[8] of Code[20];
+        DimensionNames: array[8] of Text[100];
+        ShowDimension: array[8] of Boolean;
+        TempAppliedEntryNos: List of [Integer];
+        CustomerName: Text[100];
+        PaymentMethodName: Text[100];
+        FormToPayName: Text[50];
+        FilterText: Text;
+        CustomerFilterText: Text;
+        CustomerFilter: Code[20];
+        EntrdStartDate: Date;
+        EnteredEndDate: Date;
+        ShowPendingOnly: Boolean;
+        TempPaymentCount: Integer;
+        // Variables para los movimientos aplicados
+        PaymentEntryNo: Integer;
+        PaymentDocNo: Code[20];
+        PaymentPostingDate: Date;
+        PaymentDocType: Enum "Gen. Journal Document Type";
+        AppliedDocType: Enum "Gen. Journal Document Type";
+        PaymentExtDocNo: Code[35];
+        PaymentAmount: Decimal;
+        PaymentAmountLCY: Decimal;
+        PaymentCurrencyCode: Code[10];
+        PaymentCustomerNo: Code[20];
+        PaymentCustomerName: Text[100];
+        PaymentDescription: Text[100];
+        PaymentUserID: Code[50];
+        PaymentSourceCode: Code[10];
+        PaymentDimSetID: Integer;
+        PaymentCurrencyFactor: Decimal;
+        PaymentFormToPayName: Text[50];
+        PaymentDateTimeStamped: DateTime;
+
+    // ============================================================================
+    // BÚSQUEDA COMPLETA DE MOVIMIENTOS APLICADOS (Basado en lógica del reporte IVA)
+    // ============================================================================
+
+    local procedure FindAllAppliedEntries(EntryNo: Integer)
+    var
+        CustLedgerEntry: Record "Cust. Ledger Entry";
+        ProcessedEntries: List of [Integer];
+        FoundDirectRelation: Boolean;
+    begin
+        Clear(TempAppliedEntryNos);
+        TempPaymentCount := 0;
+        FoundDirectRelation := false;
+
+        if not CustLedgerEntry.Get(EntryNo) then
+            exit;
+
+        // Búsqueda directa con relaciones exactas
+        FoundDirectRelation := SearchDirectAppliedEntries(CustLedgerEntry, ProcessedEntries);
+
+        // Si no encontramos relación directa, buscar por documento y fecha
+        if not FoundDirectRelation then begin
+            SearchByDocumentAndDate(CustLedgerEntry, ProcessedEntries);
+        end;
+
+        // Búsqueda adicional si aún no hay resultados
+        if TempPaymentCount = 0 then begin
+            SearchAdditionalEntries(CustLedgerEntry, ProcessedEntries);
+        end;
+    end;
+
+    local procedure SearchDirectAppliedEntries(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedEntries: List of [Integer]): Boolean
+    var
+        DetailedCustLedgEntry1: Record "Detailed Cust. Ledg. Entry";
+        DetailedCustLedgEntry2: Record "Detailed Cust. Ledg. Entry";
+        AppliedCustLedgerEntry: Record "Cust. Ledger Entry";
+        Found: Boolean;
+    begin
+        Found := false;
+
+        // Buscar en Detailed Customer Ledger Entry - Dirección 1
+        DetailedCustLedgEntry1.SetCurrentKey("Cust. Ledger Entry No.");
+        DetailedCustLedgEntry1.SetRange("Cust. Ledger Entry No.", CustLedgerEntry."Entry No.");
+        DetailedCustLedgEntry1.SetRange(Unapplied, false);
+
+        if DetailedCustLedgEntry1.FindSet() then
+            repeat
+                if DetailedCustLedgEntry1."Cust. Ledger Entry No." = DetailedCustLedgEntry1."Applied Cust. Ledger Entry No." then begin
+                    // Búsqueda inversa
+                    DetailedCustLedgEntry2.Reset();
+                    DetailedCustLedgEntry2.SetCurrentKey("Applied Cust. Ledger Entry No.", "Entry Type");
+                    DetailedCustLedgEntry2.SetRange("Applied Cust. Ledger Entry No.", DetailedCustLedgEntry1."Applied Cust. Ledger Entry No.");
+                    DetailedCustLedgEntry2.SetRange("Entry Type", DetailedCustLedgEntry2."Entry Type"::Application);
+                    DetailedCustLedgEntry2.SetRange(Unapplied, false);
+
+                    if DetailedCustLedgEntry2.FindSet() then
+                        repeat
+                            if DetailedCustLedgEntry2."Cust. Ledger Entry No." <> DetailedCustLedgEntry2."Applied Cust. Ledger Entry No." then begin
+                                if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry2."Cust. Ledger Entry No.") then
+                                    if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                                        AddAppliedEntryToList(AppliedCustLedgerEntry);
+                                        ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                                        Found := true;
+                                    end;
+                            end;
+                        until DetailedCustLedgEntry2.Next() = 0;
+                end else begin
+                    // Aplicación directa
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry1."Applied Cust. Ledger Entry No.") then
+                        if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                            AddAppliedEntryToList(AppliedCustLedgerEntry);
+                            ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                            Found := true;
+                        end;
+                end;
+            until DetailedCustLedgEntry1.Next() = 0;
+
+        // Verificar "Closed by Entry No."
+        if CustLedgerEntry."Closed by Entry No." <> 0 then begin
+            if AppliedCustLedgerEntry.Get(CustLedgerEntry."Closed by Entry No.") then
+                if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                    AddAppliedEntryToList(AppliedCustLedgerEntry);
+                    ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                    Found := true;
+                end;
+        end;
+
+        // Buscar movimientos que fueron cerrados por este
+        AppliedCustLedgerEntry.Reset();
+        AppliedCustLedgerEntry.SetCurrentKey("Closed by Entry No.");
+        AppliedCustLedgerEntry.SetRange("Closed by Entry No.", CustLedgerEntry."Entry No.");
+        if AppliedCustLedgerEntry.FindSet() then
+            repeat
+                if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                    AddAppliedEntryToList(AppliedCustLedgerEntry);
+                    ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                    Found := true;
+                end;
+            until AppliedCustLedgerEntry.Next() = 0;
+
+        exit(Found);
+    end;
+
+    local procedure SearchByDocumentAndDate(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedEntries: List of [Integer])
+    var
+        SearchCustLedgerEntry: Record "Cust. Ledger Entry";
+    begin
+        // Buscar por número de documento y cliente
+        SearchCustLedgerEntry.Reset();
+        SearchCustLedgerEntry.SetCurrentKey("Document No.", "Customer No.");
+        SearchCustLedgerEntry.SetRange("Document No.", CustLedgerEntry."Document No.");
+        SearchCustLedgerEntry.SetRange("Customer No.", CustLedgerEntry."Customer No.");
+
+        if SearchCustLedgerEntry.FindSet() then
+            repeat
+                if SearchCustLedgerEntry."Entry No." <> CustLedgerEntry."Entry No." then begin
+                    if not ProcessedEntries.Contains(SearchCustLedgerEntry."Entry No.") then begin
+                        // Verificar si tiene aplicaciones
+                        if SearchCustLedgerEntry."Remaining Amount" = 0 then
+                            SearchAppliedEntriesFromEntry(SearchCustLedgerEntry, ProcessedEntries)
+                        else
+                            AddAppliedEntryToList(SearchCustLedgerEntry);
+
+                        ProcessedEntries.Add(SearchCustLedgerEntry."Entry No.");
+                    end;
+                end;
+            until SearchCustLedgerEntry.Next() = 0;
+    end;
+
+    local procedure SearchAdditionalEntries(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedEntries: List of [Integer])
+    var
+        SearchCustLedgerEntry: Record "Cust. Ledger Entry";
+    begin
+        // Buscar movimientos del mismo cliente en rango de fechas cercano
+        SearchCustLedgerEntry.Reset();
+        SearchCustLedgerEntry.SetCurrentKey("Customer No.", "Posting Date");
+        SearchCustLedgerEntry.SetRange("Customer No.", CustLedgerEntry."Customer No.");
+        SearchCustLedgerEntry.SetRange("Posting Date", CalcDate('-7D', CustLedgerEntry."Posting Date"), CalcDate('+7D', CustLedgerEntry."Posting Date"));
+
+        // Filtrar por tipo opuesto (si es factura buscar pagos, si es pago buscar facturas)
+        if CustLedgerEntry."Document Type" in [CustLedgerEntry."Document Type"::Invoice, CustLedgerEntry."Document Type"::"Credit Memo"] then
+            SearchCustLedgerEntry.SetFilter("Document Type", '%1|%2',
+                SearchCustLedgerEntry."Document Type"::Payment,
+                SearchCustLedgerEntry."Document Type"::Refund)
+        else
+            SearchCustLedgerEntry.SetFilter("Document Type", '%1|%2',
+                SearchCustLedgerEntry."Document Type"::Invoice,
+                SearchCustLedgerEntry."Document Type"::"Credit Memo");
+
+        if SearchCustLedgerEntry.FindSet() then
+            repeat
+                if not ProcessedEntries.Contains(SearchCustLedgerEntry."Entry No.") then begin
+                    if SearchCustLedgerEntry."Remaining Amount" = 0 then
+                        SearchAppliedEntriesFromEntry(SearchCustLedgerEntry, ProcessedEntries);
+
+                    ProcessedEntries.Add(SearchCustLedgerEntry."Entry No.");
+
+                    if TempPaymentCount > 0 then
+                        exit; // Encontramos algo, salir
+                end;
+            until SearchCustLedgerEntry.Next() = 0;
+    end;
+
+    local procedure SearchAppliedEntriesFromEntry(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedEntries: List of [Integer])
+    var
+        DetailedCustLedgEntry: Record "Detailed Cust. Ledg. Entry";
+        AppliedCustLedgerEntry: Record "Cust. Ledger Entry";
+    begin
+        // Buscar aplicaciones de este movimiento
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", CustLedgerEntry."Entry No.");
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                if DetailedCustLedgEntry."Applied Cust. Ledger Entry No." <> DetailedCustLedgEntry."Cust. Ledger Entry No." then begin
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry."Applied Cust. Ledger Entry No.") then
+                        if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                            AddAppliedEntryToList(AppliedCustLedgerEntry);
+                            ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                        end;
+                end;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Buscar en dirección inversa
+        DetailedCustLedgEntry.Reset();
+        DetailedCustLedgEntry.SetCurrentKey("Applied Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", CustLedgerEntry."Entry No.");
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                if DetailedCustLedgEntry."Cust. Ledger Entry No." <> DetailedCustLedgEntry."Applied Cust. Ledger Entry No." then begin
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry."Cust. Ledger Entry No.") then
+                        if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                            AddAppliedEntryToList(AppliedCustLedgerEntry);
+                            ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                        end;
+                end;
+            until DetailedCustLedgEntry.Next() = 0;
+    end;
+
+    local procedure AddAppliedEntryToList(var CustLedgerEntry: Record "Cust. Ledger Entry")
+    begin
+        // Agregar cualquier tipo de movimiento aplicado (no solo pagos)
+        TempPaymentCount += 1;
+        TempAppliedEntryNos.Add(CustLedgerEntry."Entry No.");
+    end;
+
+    local procedure GetAppliedAmount(InvoiceEntryNo: Integer; PaymentEntryNo: Integer): Decimal
+    var
+        DetailedCustLedgEntry: Record "Detailed Cust. Ledg. Entry";
+        TotalAmount: Decimal;
+    begin
+        TotalAmount := 0;
+
+        // Buscar en ambas direcciones
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", PaymentEntryNo);
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", InvoiceEntryNo);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                TotalAmount += DetailedCustLedgEntry.Amount;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Buscar en dirección inversa
+        DetailedCustLedgEntry.Reset();
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", InvoiceEntryNo);
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", PaymentEntryNo);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                TotalAmount += DetailedCustLedgEntry.Amount;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        exit(Abs(TotalAmount));
+    end;
+
+    local procedure GetAppliedAmountLCY(InvoiceEntryNo: Integer; PaymentEntryNo: Integer): Decimal
+    var
+        DetailedCustLedgEntry: Record "Detailed Cust. Ledg. Entry";
+        TotalAmount: Decimal;
+    begin
+        TotalAmount := 0;
+
+        // Buscar en ambas direcciones
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", PaymentEntryNo);
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", InvoiceEntryNo);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                TotalAmount += DetailedCustLedgEntry."Amount (LCY)";
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Buscar en dirección inversa
+        DetailedCustLedgEntry.Reset();
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", InvoiceEntryNo);
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", PaymentEntryNo);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                TotalAmount += DetailedCustLedgEntry."Amount (LCY)";
+            until DetailedCustLedgEntry.Next() = 0;
+
+        exit(Abs(TotalAmount));
+    end;
+
+    // ============================================================================
+    // BÚSQUEDA DE UUID (Basado en lógica del reporte IVA)
+    // ============================================================================
+
+    local procedure GetUUIDForEntry(EntryNo: Integer): Text
+    var
+        CustLedgerEntry: Record "Cust. Ledger Entry";
+        ProcessedDocuments: List of [Code[20]];
+        UUID: Text;
+        FoundDirectRelation: Boolean;
+    begin
+        UUID := '';
+        FoundDirectRelation := false;
+
+        if not CustLedgerEntry.Get(EntryNo) then
+            exit('');
+
+        // Búsqueda directa en el header de la factura
+        UUID := GetUUIDFromDirectDocument(CustLedgerEntry, ProcessedDocuments);
+        if UUID <> '' then begin
+            FoundDirectRelation := true;
+            exit(UUID);
+        end;
+
+        // Si no encontramos UUID directamente, buscar en documentos relacionados
+        if not FoundDirectRelation then
+            UUID := SearchUUIDInRelatedDocuments(CustLedgerEntry, ProcessedDocuments);
+
+        // Si aún no hay UUID, buscar en documentos aplicados
+        if UUID = '' then
+            UUID := SearchUUIDInAppliedDocuments(CustLedgerEntry, ProcessedDocuments);
+
+        exit(UUID);
+    end;
+
+    local procedure GetUUIDFromDirectDocument(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedDocuments: List of [Code[20]]): Text
+    var
+        SalesInvHeader: Record "Sales Invoice Header";
+        SalesCrMemoHeader: Record "Sales Cr.Memo Header";
+    begin
+        // Verificar si ya procesamos este documento
+        if ProcessedDocuments.Contains(CustLedgerEntry."Document No.") then
+            exit('');
+
+        // Buscar en Sales Invoice Header
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::Invoice then begin
+            if SalesInvHeader.Get(CustLedgerEntry."Document No.") then begin
+                ProcessedDocuments.Add(CustLedgerEntry."Document No.");
+                if SalesInvHeader."Fiscal Invoice Number PAC" <> '' then
+                    exit(SalesInvHeader."Fiscal Invoice Number PAC");
+            end;
+        end;
+
+        // Buscar en Sales Credit Memo Header
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::"Credit Memo" then begin
+            if SalesCrMemoHeader.Get(CustLedgerEntry."Document No.") then begin
+                ProcessedDocuments.Add(CustLedgerEntry."Document No.");
+                if SalesCrMemoHeader."Fiscal Invoice Number PAC" <> '' then
+                    exit(SalesCrMemoHeader."Fiscal Invoice Number PAC");
+            end;
+        end;
+
+        exit('');
+    end;
+
+    local procedure SearchUUIDInRelatedDocuments(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedDocuments: List of [Code[20]]): Text
+    var
+        SearchCustLedgerEntry: Record "Cust. Ledger Entry";
+        UUID: Text;
+    begin
+        UUID := '';
+
+        // Buscar por número de documento y fecha
+        SearchCustLedgerEntry.Reset();
+        SearchCustLedgerEntry.SetCurrentKey("Document No.", "Posting Date");
+        SearchCustLedgerEntry.SetRange("Document No.", CustLedgerEntry."Document No.");
+        SearchCustLedgerEntry.SetRange("Posting Date", CustLedgerEntry."Posting Date");
+
+        if SearchCustLedgerEntry.FindSet() then
+            repeat
+                if not ProcessedDocuments.Contains(SearchCustLedgerEntry."Document No.") then begin
+                    UUID := GetUUIDFromDirectDocument(SearchCustLedgerEntry, ProcessedDocuments);
+                    if UUID <> '' then
+                        exit(UUID);
+
+                    // Si este movimiento está liquidado, buscar en sus aplicaciones
+                    if SearchCustLedgerEntry."Remaining Amount" = 0 then begin
+                        UUID := SearchUUIDInSettledDocuments(SearchCustLedgerEntry, ProcessedDocuments);
+                        if UUID <> '' then
+                            exit(UUID);
+                    end;
+                end;
+            until SearchCustLedgerEntry.Next() = 0;
+
+        exit('');
+    end;
+
+    local procedure SearchUUIDInAppliedDocuments(CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedDocuments: List of [Code[20]]): Text
+    var
+        SearchCustLedgerEntry: Record "Cust. Ledger Entry";
+        UUID: Text;
+    begin
+        UUID := '';
+
+        // Buscar movimientos del mismo cliente en rango de fechas
+        SearchCustLedgerEntry.Reset();
+        SearchCustLedgerEntry.SetCurrentKey("Customer No.", "Posting Date");
+        SearchCustLedgerEntry.SetRange("Customer No.", CustLedgerEntry."Customer No.");
+        SearchCustLedgerEntry.SetRange("Posting Date", CalcDate('-7D', CustLedgerEntry."Posting Date"), CalcDate('+7D', CustLedgerEntry."Posting Date"));
+        SearchCustLedgerEntry.SetFilter("Document Type", '%1|%2',
+            SearchCustLedgerEntry."Document Type"::Invoice,
+            SearchCustLedgerEntry."Document Type"::"Credit Memo");
+
+        if SearchCustLedgerEntry.FindSet() then
+            repeat
+                if not ProcessedDocuments.Contains(SearchCustLedgerEntry."Document No.") then begin
+                    UUID := GetUUIDFromDirectDocument(SearchCustLedgerEntry, ProcessedDocuments);
+                    if UUID <> '' then
+                        exit(UUID);
+                end;
+            until SearchCustLedgerEntry.Next() = 0;
+
+        exit('');
+    end;
+
+    local procedure SearchUUIDInSettledDocuments(var CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedDocuments: List of [Code[20]]): Text
+    var
+        DetailedCustLedgEntry: Record "Detailed Cust. Ledg. Entry";
+        AppliedCustLedgerEntry: Record "Cust. Ledger Entry";
+        UUID: Text;
+    begin
+        UUID := '';
+
+        // Buscar en movimientos aplicados - Dirección 1
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", CustLedgerEntry."Entry No.");
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                if DetailedCustLedgEntry."Applied Cust. Ledger Entry No." <> DetailedCustLedgEntry."Cust. Ledger Entry No." then begin
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry."Applied Cust. Ledger Entry No.") then begin
+                        if not ProcessedDocuments.Contains(AppliedCustLedgerEntry."Document No.") then begin
+                            UUID := GetUUIDFromCustLedgerEntry(AppliedCustLedgerEntry, ProcessedDocuments);
+                            if UUID <> '' then
+                                exit(UUID);
+                        end;
+                    end;
+                end;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Buscar en movimientos aplicados - Dirección 2
+        DetailedCustLedgEntry.Reset();
+        DetailedCustLedgEntry.SetCurrentKey("Applied Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", CustLedgerEntry."Entry No.");
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                if DetailedCustLedgEntry."Cust. Ledger Entry No." <> DetailedCustLedgEntry."Applied Cust. Ledger Entry No." then begin
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry."Cust. Ledger Entry No.") then begin
+                        if not ProcessedDocuments.Contains(AppliedCustLedgerEntry."Document No.") then begin
+                            UUID := GetUUIDFromCustLedgerEntry(AppliedCustLedgerEntry, ProcessedDocuments);
+                            if UUID <> '' then
+                                exit(UUID);
+                        end;
+                    end;
+                end;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Verificar "Closed by Entry No."
+        if CustLedgerEntry."Closed by Entry No." <> 0 then begin
+            if AppliedCustLedgerEntry.Get(CustLedgerEntry."Closed by Entry No.") then begin
+                if not ProcessedDocuments.Contains(AppliedCustLedgerEntry."Document No.") then begin
+                    UUID := GetUUIDFromCustLedgerEntry(AppliedCustLedgerEntry, ProcessedDocuments);
+                    if UUID <> '' then
+                        exit(UUID);
+                end;
+            end;
+        end;
+
+        // Buscar movimientos que fueron cerrados por este
+        AppliedCustLedgerEntry.Reset();
+        AppliedCustLedgerEntry.SetCurrentKey("Closed by Entry No.");
+        AppliedCustLedgerEntry.SetRange("Closed by Entry No.", CustLedgerEntry."Entry No.");
+        if AppliedCustLedgerEntry.FindSet() then
+            repeat
+                if not ProcessedDocuments.Contains(AppliedCustLedgerEntry."Document No.") then begin
+                    UUID := GetUUIDFromCustLedgerEntry(AppliedCustLedgerEntry, ProcessedDocuments);
+                    if UUID <> '' then
+                        exit(UUID);
+                end;
+            until AppliedCustLedgerEntry.Next() = 0;
+
+        exit('');
+    end;
+
+    local procedure GetUUIDFromCustLedgerEntry(var CustLedgerEntry: Record "Cust. Ledger Entry"; var ProcessedDocuments: List of [Code[20]]): Text
+    var
+        SalesInvHeader: Record "Sales Invoice Header";
+        SalesCrMemoHeader: Record "Sales Cr.Memo Header";
+    begin
+        // Marcar como procesado
+        if not ProcessedDocuments.Contains(CustLedgerEntry."Document No.") then
+            ProcessedDocuments.Add(CustLedgerEntry."Document No.");
+
+        // Buscar UUID según el tipo de documento
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::Invoice then begin
+            if SalesInvHeader.Get(CustLedgerEntry."Document No.") then begin
+                if SalesInvHeader."Fiscal Invoice Number PAC" <> '' then
+                    exit(SalesInvHeader."Fiscal Invoice Number PAC");
+            end;
+        end;
+
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::"Credit Memo" then begin
+            if SalesCrMemoHeader.Get(CustLedgerEntry."Document No.") then begin
+                if SalesCrMemoHeader."Fiscal Invoice Number PAC" <> '' then
+                    exit(SalesCrMemoHeader."Fiscal Invoice Number PAC");
+            end;
+        end;
+
+        exit('');
+    end;
+
+    // ============================================================================
+    // FUNCIONES DE MÉTODO Y FORMA DE PAGO
+    // ============================================================================
+
+    local procedure GetPaymentMethodAndFormToPay(CustLedgerEntry: Record "Cust. Ledger Entry"; var PaymentMethodName: Text[100]; var FormToPayName: Text[50])
+    var
+        SalesInvHeader: Record "Sales Invoice Header";
+        SalesCrMemoHeader: Record "Sales Cr.Memo Header";
+        PaymentMethod: Record "Payment Method";
+    begin
+        PaymentMethodName := '';
+        FormToPayName := '';
+
+        // Obtener método de pago del movimiento
+        if CustLedgerEntry."Payment Method Code" <> '' then begin
+            if PaymentMethod.Get(CustLedgerEntry."Payment Method Code") then
+                PaymentMethodName := PaymentMethod.Description
+            else
+                PaymentMethodName := CustLedgerEntry."Payment Method Code";
+        end;
+
+        // Obtener forma de pago del header según el tipo de documento
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::Invoice then begin
+            if SalesInvHeader.Get(CustLedgerEntry."Document No.") then begin
+                if FormToPayName = '' then
+                    FormToPayName := SalesInvHeader."Payment Method Code";
+
+                // Si no tenemos método de pago del movimiento, intentar del header
+                if (PaymentMethodName = '') and (SalesInvHeader."Payment Method Code" <> '') then begin
+                    if PaymentMethod.Get(SalesInvHeader."Payment Method Code") then
+                        PaymentMethodName := PaymentMethod.Description
+                    else
+                        PaymentMethodName := SalesInvHeader."Payment Method Code";
+                end;
+            end;
+        end;
+
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::"Credit Memo" then begin
+            if SalesCrMemoHeader.Get(CustLedgerEntry."Document No.") then begin
+                if FormToPayName = '' then
+                    FormToPayName := SalesCrMemoHeader."Payment Method Code";
+
+                if (PaymentMethodName = '') and (SalesCrMemoHeader."Payment Method Code" <> '') then begin
+                    if PaymentMethod.Get(SalesCrMemoHeader."Payment Method Code") then
+                        PaymentMethodName := PaymentMethod.Description
+                    else
+                        PaymentMethodName := SalesCrMemoHeader."Payment Method Code";
+                end;
+            end;
+        end;
+    end;
+
+    // ============================================================================
+    // FUNCIONES AUXILIARES
+    // ============================================================================
+
+    local procedure GetTipoMovimiento(DocumentType: Enum "Gen. Journal Document Type"): Text
+    begin
+        case DocumentType of
+            DocumentType::Invoice, DocumentType::"Credit Memo":
+                exit('Mov. inicial');
+            DocumentType::Payment, DocumentType::Refund:
+                exit('Mov. inicial');
+            else
+                exit('Mov. inicial');
+        end;
+    end;
+
+    local procedure GetTipoMovimientoAplicado(DocumentType: Enum "Gen. Journal Document Type"): Text
+    begin
+        case DocumentType of
+            DocumentType::Invoice:
+                exit('Factura aplicada');
+            DocumentType::"Credit Memo":
+                exit('Nota crédito aplicada');
+            DocumentType::Payment:
+                exit('Liquidación');
+            DocumentType::Refund:
+                exit('Reembolso');
+            else
+                exit('Liquidación');
+        end;
+    end;
+
+    local procedure GetEstatus(EntryNo: Integer): Text
+    var
+        CustLedgerEntry: Record "Cust. Ledger Entry";
+        SalesInvHeader: Record "Sales Invoice Header";
+        SalesCrMemoHeader: Record "Sales Cr.Memo Header";
+    begin
+        if not CustLedgerEntry.Get(EntryNo) then
+            exit('');
+
+        // Solo para facturas y notas de crédito que tengan UUID
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::Invoice then begin
+            if SalesInvHeader.Get(CustLedgerEntry."Document No.") then begin
+                if SalesInvHeader."Fiscal Invoice Number PAC" <> '' then
+                    exit('Sello Recibido');
+            end;
+        end;
+
+        if CustLedgerEntry."Document Type" = CustLedgerEntry."Document Type"::"Credit Memo" then begin
+            if SalesCrMemoHeader.Get(CustLedgerEntry."Document No.") then begin
+                if SalesCrMemoHeader."Fiscal Invoice Number PAC" <> '' then
+                    exit('Sello Recibido');
+            end;
+        end;
+
+        exit('');
+    end;
+
+    local procedure GetEstatusCancelacion(EntryNo: Integer): Text
+    begin
+        // Implementar según tu lógica de cancelación
+        exit('');
+    end;
+
+    local procedure GetTipoRelacionUUID(EntryNo: Integer): Text
+    begin
+        // Implementar según tu lógica de relación de UUIDs
+        exit('');
+    end;
+
+    local procedure GetUUIDRelacionado(EntryNo: Integer): Text
+    begin
+        // Implementar según tu lógica de UUIDs relacionados
+        exit('');
+    end;
+
+    local procedure InitializeDimensions()
+    var
+        GLSetup: Record "General Ledger Setup";
+        Dimension: Record Dimension;
+        i: Integer;
+    begin
+        Clear(DimensionCodes);
+        Clear(DimensionNames);
+        Clear(ShowDimension);
+
+        if not GLSetup.Get() then
+            exit;
+
+        i := 1;
+
+        if GLSetup."Global Dimension 1 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Global Dimension 1 Code";
+            if Dimension.Get(GLSetup."Global Dimension 1 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Global Dimension 2 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Global Dimension 2 Code";
+            if Dimension.Get(GLSetup."Global Dimension 2 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Shortcut Dimension 3 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Shortcut Dimension 3 Code";
+            if Dimension.Get(GLSetup."Shortcut Dimension 3 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Shortcut Dimension 4 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Shortcut Dimension 4 Code";
+            if Dimension.Get(GLSetup."Shortcut Dimension 4 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Shortcut Dimension 5 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Shortcut Dimension 5 Code";
+            if Dimension.Get(GLSetup."Shortcut Dimension 5 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Shortcut Dimension 6 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Shortcut Dimension 6 Code";
+            if Dimension.Get(GLSetup."Shortcut Dimension 6 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Shortcut Dimension 7 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Shortcut Dimension 7 Code";
+            if Dimension.Get(GLSetup."Shortcut Dimension 7 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+
+        if GLSetup."Shortcut Dimension 8 Code" <> '' then begin
+            DimensionCodes[i] := GLSetup."Shortcut Dimension 8 Code";
+            if Dimension.Get(GLSetup."Shortcut Dimension 8 Code") then
+                DimensionNames[i] := Dimension.Name;
+            ShowDimension[i] := true;
+            i += 1;
+        end;
+    end;
+
+    local procedure GetDimensionValue(DimensionSetID: Integer; Index: Integer): Text
+    var
+        DimSetEntry: Record "Dimension Set Entry";
+        DimensionValue: Record "Dimension Value";
+    begin
+        if DimensionSetID = 0 then
+            exit('');
+
+        if (Index > ArrayLen(DimensionCodes)) or (DimensionCodes[Index] = '') then
+            exit('');
+
+        DimSetEntry.Reset();
+        DimSetEntry.SetRange("Dimension Set ID", DimensionSetID);
+        DimSetEntry.SetRange("Dimension Code", DimensionCodes[Index]);
+
+        if DimSetEntry.FindFirst() then begin
+            if DimensionValue.Get(DimSetEntry."Dimension Code", DimSetEntry."Dimension Value Code") then
+                exit(DimensionValue.Name)
+            else
+                exit(DimSetEntry."Dimension Value Code");
+        end else
+            exit('');
+    end;
+
+    local procedure GetDimensionNameByIndex(Index: Integer): Text[100]
+    begin
+        if Index <= ArrayLen(DimensionNames) then
+            exit(DimensionNames[Index]);
+        exit('');
+    end;
+
+    local procedure FindAppliedPaymentsForInvoice(InvoiceEntryNo: Integer)
+    var
+        InvoiceCustLedgerEntry: Record "Cust. Ledger Entry";
+        DetailedCustLedgEntry: Record "Detailed Cust. Ledg. Entry";
+        AppliedCustLedgerEntry: Record "Cust. Ledger Entry";
+        ProcessedEntries: List of [Integer];
+    begin
+        Clear(TempAppliedEntryNos);
+        TempPaymentCount := 0;
+
+        if not InvoiceCustLedgerEntry.Get(InvoiceEntryNo) then
+            exit;
+
+        // Buscar en Detailed Ledger Entry - Dirección 1
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", InvoiceEntryNo);
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                if DetailedCustLedgEntry."Applied Cust. Ledger Entry No." <> DetailedCustLedgEntry."Cust. Ledger Entry No." then begin
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry."Applied Cust. Ledger Entry No.") then begin
+                        // SOLO agregar PAGOS o REEMBOLSOS
+                        if AppliedCustLedgerEntry."Document Type" in [
+                            AppliedCustLedgerEntry."Document Type"::Payment,
+                            AppliedCustLedgerEntry."Document Type"::Refund
+                        ] then begin
+                            if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                                TempPaymentCount += 1;
+                                TempAppliedEntryNos.Add(AppliedCustLedgerEntry."Entry No.");
+                                ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                            end;
+                        end;
+                    end;
+                end;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Buscar en Detailed Ledger Entry - Dirección 2
+        DetailedCustLedgEntry.Reset();
+        DetailedCustLedgEntry.SetCurrentKey("Applied Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", InvoiceEntryNo);
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                if DetailedCustLedgEntry."Cust. Ledger Entry No." <> DetailedCustLedgEntry."Applied Cust. Ledger Entry No." then begin
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry."Cust. Ledger Entry No.") then begin
+                        if AppliedCustLedgerEntry."Document Type" in [
+                            AppliedCustLedgerEntry."Document Type"::Payment,
+                            AppliedCustLedgerEntry."Document Type"::Refund
+                        ] then begin
+                            if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                                TempPaymentCount += 1;
+                                TempAppliedEntryNos.Add(AppliedCustLedgerEntry."Entry No.");
+                                ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                            end;
+                        end;
+                    end;
+                end;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Verificar "Closed by Entry No."
+        if InvoiceCustLedgerEntry."Closed by Entry No." <> 0 then begin
+            if AppliedCustLedgerEntry.Get(InvoiceCustLedgerEntry."Closed by Entry No.") then begin
+                if AppliedCustLedgerEntry."Document Type" in [
+                    AppliedCustLedgerEntry."Document Type"::Payment,
+                    AppliedCustLedgerEntry."Document Type"::Refund
+                ] then begin
+                    if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                        TempPaymentCount += 1;
+                        TempAppliedEntryNos.Add(AppliedCustLedgerEntry."Entry No.");
+                        ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                    end;
+                end;
+            end;
+        end;
+
+        // Buscar movimientos cerrados por esta factura
+        AppliedCustLedgerEntry.Reset();
+        AppliedCustLedgerEntry.SetCurrentKey("Closed by Entry No.");
+        AppliedCustLedgerEntry.SetRange("Closed by Entry No.", InvoiceEntryNo);
+        AppliedCustLedgerEntry.SetFilter("Document Type", '%1|%2',
+            AppliedCustLedgerEntry."Document Type"::Payment,
+            AppliedCustLedgerEntry."Document Type"::Refund);
+
+        if AppliedCustLedgerEntry.FindSet() then
+            repeat
+                if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                    TempPaymentCount += 1;
+                    TempAppliedEntryNos.Add(AppliedCustLedgerEntry."Entry No.");
+                    ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                end;
+            until AppliedCustLedgerEntry.Next() = 0;
+    end;
+
+    local procedure FindAppliedInvoicesForPayment(PaymentEntryNo: Integer)
+    var
+        PaymentCustLedgerEntry: Record "Cust. Ledger Entry";
+        DetailedCustLedgEntry: Record "Detailed Cust. Ledg. Entry";
+        AppliedCustLedgerEntry: Record "Cust. Ledger Entry";
+        ProcessedEntries: List of [Integer];
+    begin
+        Clear(TempAppliedEntryNos);
+        TempPaymentCount := 0;
+
+        if not PaymentCustLedgerEntry.Get(PaymentEntryNo) then
+            exit;
+
+        // Buscar en Detailed Ledger Entry - Dirección 1
+        DetailedCustLedgEntry.SetCurrentKey("Cust. Ledger Entry No.");
+        DetailedCustLedgEntry.SetRange("Cust. Ledger Entry No.", PaymentEntryNo);
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                if DetailedCustLedgEntry."Applied Cust. Ledger Entry No." <> DetailedCustLedgEntry."Cust. Ledger Entry No." then begin
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry."Applied Cust. Ledger Entry No.") then begin
+                        // SOLO agregar FACTURAS o NOTAS DE CRÉDITO
+                        if AppliedCustLedgerEntry."Document Type" in [
+                            AppliedCustLedgerEntry."Document Type"::Invoice,
+                            AppliedCustLedgerEntry."Document Type"::"Credit Memo"
+                        ] then begin
+                            if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                                TempPaymentCount += 1;
+                                TempAppliedEntryNos.Add(AppliedCustLedgerEntry."Entry No.");
+                                ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                            end;
+                        end;
+                    end;
+                end;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Buscar en Detailed Ledger Entry - Dirección 2
+        DetailedCustLedgEntry.Reset();
+        DetailedCustLedgEntry.SetCurrentKey("Applied Cust. Ledger Entry No.", "Entry Type");
+        DetailedCustLedgEntry.SetRange("Applied Cust. Ledger Entry No.", PaymentEntryNo);
+        DetailedCustLedgEntry.SetRange(Unapplied, false);
+        DetailedCustLedgEntry.SetRange("Entry Type", DetailedCustLedgEntry."Entry Type"::Application);
+
+        if DetailedCustLedgEntry.FindSet() then
+            repeat
+                if DetailedCustLedgEntry."Cust. Ledger Entry No." <> DetailedCustLedgEntry."Applied Cust. Ledger Entry No." then begin
+                    if AppliedCustLedgerEntry.Get(DetailedCustLedgEntry."Cust. Ledger Entry No.") then begin
+                        if AppliedCustLedgerEntry."Document Type" in [
+                            AppliedCustLedgerEntry."Document Type"::Invoice,
+                            AppliedCustLedgerEntry."Document Type"::"Credit Memo"
+                        ] then begin
+                            if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                                TempPaymentCount += 1;
+                                TempAppliedEntryNos.Add(AppliedCustLedgerEntry."Entry No.");
+                                ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                            end;
+                        end;
+                    end;
+                end;
+            until DetailedCustLedgEntry.Next() = 0;
+
+        // Verificar "Closed by Entry No."
+        if PaymentCustLedgerEntry."Closed by Entry No." <> 0 then begin
+            if AppliedCustLedgerEntry.Get(PaymentCustLedgerEntry."Closed by Entry No.") then begin
+                if AppliedCustLedgerEntry."Document Type" in [
+                    AppliedCustLedgerEntry."Document Type"::Invoice,
+                    AppliedCustLedgerEntry."Document Type"::"Credit Memo"
+                ] then begin
+                    if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                        TempPaymentCount += 1;
+                        TempAppliedEntryNos.Add(AppliedCustLedgerEntry."Entry No.");
+                        ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                    end;
+                end;
+            end;
+        end;
+
+        // Buscar movimientos cerrados por este pago
+        AppliedCustLedgerEntry.Reset();
+        AppliedCustLedgerEntry.SetCurrentKey("Closed by Entry No.");
+        AppliedCustLedgerEntry.SetRange("Closed by Entry No.", PaymentEntryNo);
+        AppliedCustLedgerEntry.SetFilter("Document Type", '%1|%2',
+            AppliedCustLedgerEntry."Document Type"::Invoice,
+            AppliedCustLedgerEntry."Document Type"::"Credit Memo");
+
+        if AppliedCustLedgerEntry.FindSet() then
+            repeat
+                if not ProcessedEntries.Contains(AppliedCustLedgerEntry."Entry No.") then begin
+                    TempPaymentCount += 1;
+                    TempAppliedEntryNos.Add(AppliedCustLedgerEntry."Entry No.");
+                    ProcessedEntries.Add(AppliedCustLedgerEntry."Entry No.");
+                end;
+            until AppliedCustLedgerEntry.Next() = 0;
+    end;
+}
